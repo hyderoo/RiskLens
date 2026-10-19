@@ -17,7 +17,7 @@ export default function Explain() {
       <Async state={s} h="h-96">{(d) => (
         <div className="grid gap-4 lg:grid-cols-5">
           <Panel title="Global importance (mean |SHAP|)" kind="model" className="lg:col-span-3" note={d.note}>
-            <div className="h-[28rem]"><ResponsiveContainer><BarChart data={d.rows.slice(0, 15)} layout="vertical" margin={{ left: 20, right: 12 }}><CartesianGrid stroke={GRID} horizontal={false} /><XAxis type="number" {...AXIS} /><YAxis type="category" dataKey="feature" {...AXIS} width={150} /><Tooltip content={<ChartTip fmt={(_n, v) => v.toFixed(3)} />} cursor={{ fill: "var(--accent)" }} /><Bar dataKey="mean_abs_shap" name="Mean |SHAP|" fill="var(--chart-1)" radius={[0, 3, 3, 0]} /></BarChart></ResponsiveContainer></div>
+            <div className="h-[28rem]"><ResponsiveContainer><BarChart data={d.rows.slice(0, 15)} layout="vertical" margin={{ left: 20, right: 12 }}><CartesianGrid stroke={GRID} horizontal={false} /><XAxis type="number" {...AXIS} /><YAxis type="category" dataKey="feature" {...AXIS} width={150} /><Tooltip content={<ChartTip fmt={(_n, v) => v.toFixed(3)} />} cursor={{ fill: "var(--accent)" }} /><Bar isAnimationActive={false} dataKey="mean_abs_shap" name="Mean |SHAP|" fill="var(--chart-1)" radius={[0, 3, 3, 0]} /></BarChart></ResponsiveContainer></div>
           </Panel>
           <Panel title="Reading the top drivers" kind="model" className="lg:col-span-2">
             <ul className="space-y-3 text-xs">{d.rows.slice(0, 6).map((r) => <li key={r.feature}><div className="font-medium">{r.feature}</div><div className="text-muted-foreground">{desc(r.feature)}</div></li>)}</ul>
