@@ -33,7 +33,7 @@ export default function Overview() {
         const bands = ["low", "medium", "high", "critical"].map((b) => d.risk_distribution.find((r) => r.band === b) ?? { band: b, n: 0, labeled: 0, fraud: 0, amount: 0 });
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
+            <div className="kpi-band grid grid-cols-2 gap-x-3 gap-y-5 md:grid-cols-3 xl:grid-cols-6">
               <Kpi label="Transactions" value={n0(k.transactions)} sub={`${n0(k.labeled)} labeled · ${n0(k.unlabeled)} unlabeled`} kind="historical" href={dlq("")} hint="All transactions matching the filters." />
               <Kpi label="Total value" value={usdC(k.total_amount)} sub="Sum of signed amounts" kind="historical" />
               <Kpi label="Confirmed fraud" value={n0(k.confirmed_fraud)} sub={`${pct(k.fraud_rate_labeled, 3)} of labeled`} kind="historical" href={dlq("label=fraud")} hint="Rows labeled Yes. Unlabeled rows are excluded from the rate." />
@@ -43,16 +43,16 @@ export default function Overview() {
             </div>
 
             <div className="grid gap-4 xl:grid-cols-3">
-              <Panel title="Volume and confirmed fraud over time" kind="historical" className="xl:col-span-2" note="Monthly. Fraud rate uses labeled transactions only. The uneven fraud counts across years look like a property of the synthetic generator.">
+              <Panel open title="Volume and confirmed fraud over time" kind="historical" className="xl:col-span-2" note="Monthly. Fraud rate uses labeled transactions only. The uneven fraud counts across years look like a property of the synthetic generator.">
                 <div className="h-72"><ResponsiveContainer>
                   <ComposedChart data={trend} margin={{ left: 0, right: 8, top: 8 }}>
-                    <CartesianGrid stroke={GRID} vertical={false} />
+                    <CartesianGrid stroke={GRID} strokeDasharray="2 5" vertical={false} />
                     <XAxis dataKey="ym" {...AXIS} tickFormatter={(v: string) => v.slice(0, 4)} interval={11} />
                     <YAxis yAxisId="l" {...AXIS} tickFormatter={compact} width={44} />
                     <YAxis yAxisId="r" orientation="right" {...AXIS} tickFormatter={(v: number) => v.toFixed(2) + "%"} width={48} />
                     <Tooltip content={<ChartTip fmt={(n, v) => n.includes("rate") ? v.toFixed(3) + "%" : n0(v)} />} />
-                    <Bar isAnimationActive={false} yAxisId="l" dataKey="n" name="Transactions" fill="var(--chart-2)" />
-                    <Line isAnimationActive={false} yAxisId="r" dataKey="rate" name="Fraud rate (labeled)" stroke="var(--chart-5)" strokeWidth={2} dot={false} connectNulls />
+                    <Bar isAnimationActive={false} yAxisId="l" dataKey="n" name="Transactions" fill="var(--chart-2)" fillOpacity={0.55} />
+                    <Line isAnimationActive={false} yAxisId="r" dataKey="rate" name="Fraud rate (labeled)" stroke="var(--chart-5)" strokeWidth={2.5} dot={false} connectNulls />
                   </ComposedChart>
                 </ResponsiveContainer></div>
               </Panel>

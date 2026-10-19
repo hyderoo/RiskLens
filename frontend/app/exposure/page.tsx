@@ -30,7 +30,7 @@ export default function Exposure() {
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               {([["Transactions reviewed", n0(d.reviewed)], ["Value reviewed", usd(d.reviewed_amount)], ["Fraud in reviewed", `${n0(d.fraud_in_reviewed)} of ${n0(d.total_fraud)}`], ["Fraud value in reviewed", `${usd(d.fraud_amount_in_reviewed)} of ${usd(d.total_fraud_amount)}`], ["Hypothetical recovery", usd(d.hypothetical_recovered_amount)], ["Review effort", `${n0(d.review_hours)} h (${d.analysts_needed.toFixed(2)} analysts)`]] as const).map(([k, v]) => <div key={k} className="border-t border-foreground/80 pt-2 pb-2"><div className="text-xs text-muted-foreground">{k}</div><div className="tnum mt-1 text-lg font-semibold">{v}</div></div>)}
             </div>
-            <Panel title="Formulas and assumptions" kind="simulated"><ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">{d.formulas.map((f) => <li key={f}>{f}</li>)}{Object.values(d.assumptions).map((a) => <li key={a}>{a}</li>)}</ul>
+            <Panel open title="Formulas and assumptions" kind="simulated"><ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">{d.formulas.map((f) => <li key={f}>{f}</li>)}{Object.values(d.assumptions).map((a) => <li key={a}>{a}</li>)}</ul>
               <p className="mt-3 text-xs text-muted-foreground">Not in this dataset, needed for expected-loss estimates: {d.data_needed_for_expected_loss}</p></Panel>
           </div>)}</Async></div>
       </div>

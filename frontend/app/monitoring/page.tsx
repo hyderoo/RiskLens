@@ -15,7 +15,7 @@ export default function Monitoring() {
       <PageHeader title="Risk Monitoring" kind="model" subtitle="Data quality, feature drift (PSI) and model performance over time. Alerts are rule-based on the thresholds shown, computed from this dataset." />
       <Async state={s} h="h-96">{(d) => (
         <div className="space-y-4">
-          <Panel title={`Alerts (${d.alerts.length})`} note={`Rules: missing rate > ${pct(d.config.max_missing_rate, 0)}, PSI warn ${d.config.psi_warn} / alert ${d.config.psi_alert}, recall below ${pct(d.config.min_recall, 0)}.`}>
+          <Panel open title={`Alerts (${d.alerts.length})`} note={`Rules: missing rate > ${pct(d.config.max_missing_rate, 0)}, PSI warn ${d.config.psi_warn} / alert ${d.config.psi_alert}, recall below ${pct(d.config.min_recall, 0)}.`}>
             {d.alerts.length === 0 ? <p className="text-sm text-muted-foreground">No rule fired.</p> : <ul className="divide-y">{d.alerts.map((a, i) => <li key={i} className="flex items-start gap-3 py-2 text-sm"><span className={`mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${sev[a.severity] ?? ""}`}>{a.severity}</span><div><div className="font-medium">{a.subject} <span className="text-xs font-normal text-muted-foreground">({a.kind.replace("_", " ")})</span></div><div className="text-xs text-muted-foreground">{a.detail}</div></div></li>)}</ul>}
           </Panel>
           <div className="grid gap-4 lg:grid-cols-2">
@@ -26,7 +26,7 @@ export default function Monitoring() {
             <Panel title="Feature drift (PSI vs train)" kind="model" note="PSI below 0.1 is usually read as stable. Thresholds are conventions, not guarantees.">
               <table className="tnum w-full text-xs"><tbody>{d.drift.map((r, i) => <tr key={i} className="border-t first:border-0"><td className="py-1">{r.feature}</td><td className="text-muted-foreground">{r.compared}</td><td className={`text-right ${r.psi >= d.config.psi_warn ? "text-high" : ""}`}>{r.psi.toFixed(4)}</td></tr>)}</tbody></table>
             </Panel>
-            <Panel title="Recall by quarter (test)" kind="model" className="lg:col-span-2"><div className="h-56"><ResponsiveContainer><BarChart data={d.performance_over_time}><CartesianGrid stroke={GRID} vertical={false} /><XAxis dataKey="quarter" {...AXIS} /><YAxis {...AXIS} width={40} tickFormatter={(v: number) => (v * 100).toFixed(0) + "%"} /><Tooltip content={<ChartTip fmt={(_n, v) => pct(v, 1)} />} /><Bar isAnimationActive={false} dataKey="recall" name="Recall" fill="var(--chart-2)" /><Bar isAnimationActive={false} dataKey="precision" name="Precision" fill="var(--chart-1)" /></BarChart></ResponsiveContainer></div></Panel>
+            <Panel title="Recall by quarter (test)" kind="model" className="lg:col-span-2"><div className="h-56"><ResponsiveContainer><BarChart data={d.performance_over_time}><CartesianGrid stroke={GRID} strokeDasharray="2 5" vertical={false} /><XAxis dataKey="quarter" {...AXIS} /><YAxis {...AXIS} width={40} tickFormatter={(v: number) => (v * 100).toFixed(0) + "%"} /><Tooltip content={<ChartTip fmt={(_n, v) => pct(v, 1)} />} /><Bar isAnimationActive={false} dataKey="recall" name="Recall" fill="var(--chart-2)" /><Bar isAnimationActive={false} dataKey="precision" name="Precision" fill="var(--chart-1)" /></BarChart></ResponsiveContainer></div></Panel>
           </div>
           <p className="text-[11px] text-muted-foreground">{d.disclaimer}</p>
         </div>)}</Async>

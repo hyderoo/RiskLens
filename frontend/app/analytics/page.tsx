@@ -22,12 +22,12 @@ export default function Analytics() {
   return (
     <>
       <PageHeader title="Fraud Analytics" kind="historical" subtitle="Where confirmed fraud concentrates. Rates use labeled transactions only. Associations are descriptive, not causal." />
-      <Panel title="Fraud rate by dimension" kind="historical" className="mb-4" note={f.data?.note}
+      <Panel open title="Fraud rate by dimension" kind="historical" className="mb-4" note={f.data?.note}
         action={<Select value={dim} onValueChange={(v) => setDim(v ?? "use_chip")}><SelectTrigger className="h-8 w-48"><SelectValue /></SelectTrigger><SelectContent>{DIMS.map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent></Select>}>
         <Async state={f} h="h-80">{(d) => (
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="h-80"><ResponsiveContainer><BarChart data={d.rows.map((r) => ({ ...r, rate: (r.fraud_rate ?? 0) * 100, label: r.mcc_desc ? `${r.grp}` : r.grp }))} margin={{ left: 0, right: 8 }}>
-              <CartesianGrid stroke={GRID} vertical={false} /><XAxis dataKey="label" {...AXIS} interval={0} angle={-30} textAnchor="end" height={55} /><YAxis {...AXIS} tickFormatter={(v: number) => v + "%"} width={44} />
+              <CartesianGrid stroke={GRID} strokeDasharray="2 5" vertical={false} /><XAxis dataKey="label" {...AXIS} interval={0} angle={-30} textAnchor="end" height={55} /><YAxis {...AXIS} tickFormatter={(v: number) => v + "%"} width={44} />
               <Tooltip content={<ChartTip fmt={(_n, v) => v.toFixed(3) + "%"} />} cursor={{ fill: "var(--accent)" }} />
               <Bar isAnimationActive={false} dataKey="rate" name="Fraud rate">{d.rows.map((r) => <Cell key={r.grp} fill={r.low_sample ? "var(--muted-foreground)" : "var(--chart-1)"} fillOpacity={r.low_sample ? 0.4 : 1} />)}</Bar>
             </BarChart></ResponsiveContainer></div>
@@ -51,7 +51,7 @@ export default function Analytics() {
             <div><dt className="text-xs text-muted-foreground">Fraud in top 1% of clients</dt><dd className="tnum">{pct(d.concentration.share_in_top_1pct_clients, 1)}</dd></div>
             <div><dt className="text-xs text-muted-foreground">Fraud in top 10% of clients</dt><dd className="tnum">{pct(d.concentration.share_in_top_10pct_clients, 1)}</dd></div></dl>)}</Async></Panel>
         <Panel title="Amount distribution" kind="historical" className="lg:col-span-2" note={h.data?.note}>
-          <Async state={h} h="h-64">{(d) => (<div className="h-64"><ResponsiveContainer><BarChart data={d.rows} margin={{ left: 0, right: 8 }}><CartesianGrid stroke={GRID} vertical={false} /><XAxis dataKey="bucket" {...AXIS} tickFormatter={(v: number) => "$" + v} /><YAxis {...AXIS} width={50} tickFormatter={(v: number) => (v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? (v / 1e3).toFixed(0) + "k" : String(v))} /><Tooltip content={<ChartTip fmt={(_n, v) => n0(v)} />} /><Bar isAnimationActive={false} dataKey="n" name="Transactions" fill="var(--chart-2)" /><Bar isAnimationActive={false} dataKey="fraud" name="Confirmed fraud" fill="var(--chart-5)" /></BarChart></ResponsiveContainer></div>)}</Async></Panel>
+          <Async state={h} h="h-64">{(d) => (<div className="h-64"><ResponsiveContainer><BarChart data={d.rows} margin={{ left: 0, right: 8 }}><CartesianGrid stroke={GRID} strokeDasharray="2 5" vertical={false} /><XAxis dataKey="bucket" {...AXIS} tickFormatter={(v: number) => "$" + v} /><YAxis {...AXIS} width={50} tickFormatter={(v: number) => (v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? (v / 1e3).toFixed(0) + "k" : String(v))} /><Tooltip content={<ChartTip fmt={(_n, v) => n0(v)} />} /><Bar isAnimationActive={false} dataKey="n" name="Transactions" fill="var(--chart-2)" /><Bar isAnimationActive={false} dataKey="fraud" name="Confirmed fraud" fill="var(--chart-5)" /></BarChart></ResponsiveContainer></div>)}</Async></Panel>
       </div>
     </>
   );

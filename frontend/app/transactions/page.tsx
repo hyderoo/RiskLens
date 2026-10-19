@@ -74,7 +74,7 @@ function Explorer() {
         </div>
         <div className="grid items-end gap-4 md:grid-cols-3">
           <label className="text-xs text-muted-foreground">Dataset label
-            <Select value={local.label || "all"} onValueChange={(v) => upd({ label: !v || v === "all" ? "" : v })}><SelectTrigger className="mt-1 h-8"><SelectValue /></SelectTrigger>
+            <Select value={local.label || "all"} onValueChange={(v) => upd({ label: !v || v === "all" ? "" : v })}><SelectTrigger className="mt-1 h-8"><SelectValue>{(v: string | null) => ({ all: "Use global filter", fraud: "Confirmed fraud", nonfraud: "Labeled non-fraud", unlabeled: "Unlabeled" } as Record<string,string>)[v ?? "all"] ?? "Use global filter"}</SelectValue></SelectTrigger>
               <SelectContent><SelectItem value="all">Use global filter</SelectItem><SelectItem value="fraud">Confirmed fraud</SelectItem><SelectItem value="nonfraud">Labeled non-fraud</SelectItem><SelectItem value="unlabeled">Unlabeled</SelectItem></SelectContent></Select></label>
           <div className="text-xs text-muted-foreground md:col-span-2">Minimum model risk score: <span className="tnum font-medium text-foreground">{local.threshold.toFixed(3)}</span>
             <Slider className="mt-3" min={0} max={0.046} step={0.001} value={[local.threshold]} onValueChange={(v) => upd({ threshold: Array.isArray(v) ? v[0] : v })} aria-label="Minimum risk score" /></div>
