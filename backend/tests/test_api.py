@@ -43,3 +43,10 @@ def test_threshold_endpoint_monotonic():
 @needs_db
 def test_unknown_transaction_404_and_no_stacktrace():
     r = client.get("/api/transactions/1"); assert r.status_code == 404 and "Traceback" not in r.text and "/home" not in r.text
+
+
+@needs_db
+def test_scenario_formulas_document_analyst_load():
+    r = client.get("/api/scenario", params={"threshold": 0.03, "review_rate": 0.5})
+    assert r.status_code == 200
+    assert any(f.startswith("analysts_needed") for f in r.json()["formulas"])
