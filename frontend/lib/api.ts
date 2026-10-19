@@ -4,19 +4,28 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export const API = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) { super(message); }
+  status: number;
+  constructor(status: number, message: string) { super(message); this.status = status; }
 }
 
+const RETRY_DELAYS = [1000, 2000, 3000, 5000, 8000];
+const RETRYABLE = new Set([0, 502, 503, 504]);
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** GET requests are retried with backoff (about 19 s in total) so a cold or restarting API recovers without the user doing anything. */
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  let res: Response;
-  try { res = await fetch(`${API}${path}`, { ...init, headers: { "content-type": "application/json", ...(init?.headers ?? {}) } }); }
-  catch { throw new ApiError(0, "Cannot reach the RiskLens API. Is the backend running?"); }
-  if (!res.ok) {
-    let msg = `Request failed (${res.status})`;
+  const isGet = !init?.method || init.method.toUpperCase() === "GET";
+  for (let attempt = 0; ; attempt++) {
+    let res: Response | null = null;
+    try { res = await fetch(`${API}${path}`, { ...init, headers: { "content-type": "application/json", ...(init?.headers ?? {}) } }); } catch { res = null; }
+    const status = res ? res.status : 0;
+    if (res && res.ok) return res.json() as Promise<T>;
+    if (isGet && RETRYABLE.has(status) && attempt < RETRY_DELAYS.length) { await wait(RETRY_DELAYS[attempt]); continue; }
+    if (!res) throw new ApiError(0, "Cannot reach the RiskLens API. Is the backend running?");
+    let msg = `Request failed (${status})`;
     try { const j = await res.json(); msg = typeof j.detail === "string" ? j.detail : Array.isArray(j.detail) ? j.detail.map((d: { msg: string }) => d.msg).join("; ") : msg; } catch {}
-    throw new ApiError(res.status, msg);
+    throw new ApiError(status, msg);
   }
-  return res.json() as Promise<T>;
 }
 
 export function qs(params: Record<string, string | number | boolean | null | undefined>): string {

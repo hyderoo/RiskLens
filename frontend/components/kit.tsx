@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,16 @@ export function Panel({ title, kind, note, children, className, action, open }: 
   );
 }
 
-export function LoadingBlock({ h = "h-56" }: { h?: string }) { return <Skeleton className={cn("w-full rounded-lg", h)} />; }
+export function LoadingBlock({ h = "h-56" }: { h?: string }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setSlow(true), 4000); return () => clearTimeout(t); }, []);
+  return (
+    <div role="status" aria-live="polite" aria-label="Loading">
+      <Skeleton className={cn("w-full rounded-lg", h)} />
+      {slow && <p className="mt-2 text-xs text-muted-foreground">Still loading. The API may be starting up or running a large query on 13M rows. This retries on its own.</p>}
+    </div>
+  );
+}
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div role="alert" className="flex items-start gap-3 rounded-md border-l-4 border-chart-5 bg-chart-5/10 p-4 text-sm">

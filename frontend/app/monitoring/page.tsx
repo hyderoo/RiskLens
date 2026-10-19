@@ -2,6 +2,8 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Async, PageHeader, Panel } from "@/components/kit";
 import { AXIS, ChartTip, GRID } from "@/components/charts";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import { useApi } from "@/lib/api";
 import { n0, pct } from "@/lib/format";
 
@@ -9,10 +11,23 @@ type Mon = { disclaimer: string; quality: { rows: number; missing: Record<string
 const sev: Record<string, string> = { low: "bg-low/15 text-low", medium: "bg-medium/20 text-medium", high: "bg-high/15 text-high", critical: "bg-critical/15 text-critical" };
 
 export default function Monitoring() {
-  const s = useApi<Mon>("/api/monitoring");
+  const [t, setT] = useState({ psi_warn: "0.1", psi_alert: "0.25", min_recall: "0.1", max_missing_rate: "0.5" });
+  const rng: Record<string, [number, number]> = { psi_warn: [0, 5], psi_alert: [0, 5], min_recall: [0, 1], max_missing_rate: [0, 1] };
+  const bad = Object.entries(t).filter(([k, v]) => v.trim() === "" || !Number.isFinite(Number(v)) || Number(v) < rng[k][0] || Number(v) > rng[k][1]).map(([k]) => k);
+  const s = useApi<Mon>(bad.length ? null : `/api/monitoring?${new URLSearchParams(t).toString()}`);
+  const lbl: Record<string, string> = { psi_warn: "PSI warn", psi_alert: "PSI alert", min_recall: "Min recall (0-1)", max_missing_rate: "Max missing rate (0-1)" };
   return (
     <>
       <PageHeader title="Risk Monitoring" kind="model" subtitle="Data quality, feature drift (PSI) and model performance over time. Alerts are rule-based on the thresholds shown, computed from this dataset." />
+      <fieldset className="mb-4 grid grid-cols-2 gap-3 rounded-md bg-card p-3 md:grid-cols-4">
+        <legend className="eyebrow px-1">Alert thresholds (editable)</legend>
+        {(Object.keys(t) as (keyof typeof t)[]).map((k) => (
+          <label key={k} className="text-xs text-muted-foreground">{lbl[k]}
+            <Input inputMode="decimal" value={t[k]} aria-invalid={bad.includes(k)} onChange={(e) => setT({ ...t, [k]: e.target.value })} className="tnum mt-1 h-8" />
+            {bad.includes(k) && <span role="alert" className="text-[11px] text-destructive">Enter a number from {rng[k][0]} to {rng[k][1]}.</span>}
+          </label>
+        ))}
+      </fieldset>
       <Async state={s} h="h-96">{(d) => (
         <div className="space-y-4">
           <Panel open title={`Alerts (${d.alerts.length})`} note={`Rules: missing rate > ${pct(d.config.max_missing_rate, 0)}, PSI warn ${d.config.psi_warn} / alert ${d.config.psi_alert}, recall below ${pct(d.config.min_recall, 0)}.`}>

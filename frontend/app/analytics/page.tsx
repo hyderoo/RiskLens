@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Async, PageHeader, Panel } from "@/components/kit";
 import { AXIS, ChartTip, GRID } from "@/components/charts";
@@ -11,9 +13,18 @@ import { n0, pct, usd } from "@/lib/format";
 type Fraud = { dimension: string; base_rate: number | null; labeled: number; fraud: number; rows: { grp: string; mcc_desc: string | null; labeled: number; fraud: number; fraud_amount: number; fraud_rate: number | null; share_of_fraud: number | null; low_sample: boolean }[]; note: string };
 type Summary = { amount_by_label: { label: string; n: number; mean: number; median: number; p95: number; p99: number; max: number }[]; high_value: { threshold: number; n: number; fraud: number; labeled: number; fraud_amt: number }; outliers: { rule: string; n: number; fraud: number; labeled: number }; concentration: { clients: number; clients_with_fraud: number; fraud: number; share_in_top_1pct_clients: number; share_in_top_10pct_clients: number } };
 type Hist = { bucket_width: number; note: string; rows: { bucket: number; n: number; fraud: number; labeled: number }[] };
+function drill(dim: string, grp: string): string | null {
+  const g = encodeURIComponent(grp);
+  if (dim === "use_chip") return `/transactions?label=fraud&use_chip=${g}`;
+  if (dim === "mcc") return `/transactions?label=fraud&mcc=${g}`;
+  if (dim === "merchant_state") return `/transactions?label=fraud&state=${g}`;
+  if (dim === "year" && /^\d{4}$/.test(grp)) return `/transactions?label=fraud&date_from=${grp}-01-01&date_to=${grp}-12-31`;
+  return null;
+}
 const DIMS: [string, string][] = [["use_chip", "Channel"], ["mcc", "Merchant category"], ["merchant_state", "Merchant state"], ["year", "Year"], ["hour", "Hour of day"], ["dow", "Day of week"], ["card_brand", "Card brand"], ["card_type", "Card type"]];
 
 export default function Analytics() {
+  const router = useRouter();
   const [dim, setDim] = useState("use_chip");
   const q = useGlobalQs();
   const f = useApi<Fraud>(`/api/analytics/fraud${q}${q ? "&" : "?"}dimension=${dim}&limit=15`);
@@ -29,10 +40,10 @@ export default function Analytics() {
             <div className="h-80"><ResponsiveContainer><BarChart data={d.rows.map((r) => ({ ...r, rate: (r.fraud_rate ?? 0) * 100, label: r.mcc_desc ? `${r.grp}` : r.grp }))} margin={{ left: 0, right: 8 }}>
               <CartesianGrid stroke={GRID} strokeDasharray="2 5" vertical={false} /><XAxis dataKey="label" {...AXIS} interval={0} angle={-30} textAnchor="end" height={55} /><YAxis {...AXIS} tickFormatter={(v: number) => v + "%"} width={44} />
               <Tooltip content={<ChartTip fmt={(_n, v) => v.toFixed(3) + "%"} />} cursor={{ fill: "var(--accent)" }} />
-              <Bar isAnimationActive={false} dataKey="rate" name="Fraud rate">{d.rows.map((r) => <Cell key={r.grp} fill={r.low_sample ? "var(--muted-foreground)" : "var(--chart-1)"} fillOpacity={r.low_sample ? 0.4 : 1} />)}</Bar>
+              <Bar isAnimationActive={false} dataKey="rate" name="Fraud rate" cursor={["use_chip", "mcc", "merchant_state", "year"].includes(dim) ? "pointer" : undefined} onClick={(e: { payload?: { grp?: string } }) => { const h = e?.payload?.grp ? drill(dim, e.payload.grp) : null; if (h) router.push(h); }}>{d.rows.map((r) => <Cell key={r.grp} fill={r.low_sample ? "var(--muted-foreground)" : "var(--chart-1)"} fillOpacity={r.low_sample ? 0.4 : 1} />)}</Bar>
             </BarChart></ResponsiveContainer></div>
             <div className="max-h-80 overflow-auto"><table className="tnum w-full text-xs"><thead className="sticky top-0 bg-card text-muted-foreground"><tr><th className="text-left font-normal">Group</th><th className="text-right font-normal">Labeled</th><th className="text-right font-normal">Fraud</th><th className="text-right font-normal">Rate</th><th className="text-right font-normal">Share</th></tr></thead>
-              <tbody>{d.rows.map((r) => <tr key={r.grp} className="border-t"><td className="py-1">{r.grp}{r.mcc_desc ? ` · ${r.mcc_desc}` : ""}{r.low_sample && <span className="ml-1 text-[10px] text-muted-foreground">(small sample)</span>}</td><td className="text-right">{n0(r.labeled)}</td><td className="text-right">{n0(r.fraud)}</td><td className="text-right">{pct(r.fraud_rate, 3)}</td><td className="text-right">{pct(r.share_of_fraud, 1)}</td></tr>)}</tbody></table></div>
+              <tbody>{d.rows.map((r) => <tr key={r.grp} className="border-t"><td className="py-1">{drill(dim, r.grp) ? <Link className="text-primary hover:underline" href={drill(dim, r.grp)!} title="Open the confirmed fraud rows in the Transaction Explorer">{r.grp}{r.mcc_desc ? ` · ${r.mcc_desc}` : ""}</Link> : <>{r.grp}{r.mcc_desc ? ` · ${r.mcc_desc}` : ""}</>}{r.low_sample && <span className="ml-1 text-[10px] text-muted-foreground">(small sample)</span>}</td><td className="text-right">{n0(r.labeled)}</td><td className="text-right">{n0(r.fraud)}</td><td className="text-right">{pct(r.fraud_rate, 3)}</td><td className="text-right">{pct(r.share_of_fraud, 1)}</td></tr>)}</tbody></table></div>
             <p className="text-[11px] text-muted-foreground lg:col-span-2">Overall labeled base rate {pct(d.base_rate, 3)} ({n0(d.fraud)} frauds in {n0(d.labeled)} labeled). Grey bars have too few labeled rows for a stable rate.</p>
           </div>)}</Async>
       </Panel>

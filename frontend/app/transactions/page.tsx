@@ -37,7 +37,7 @@ function Explorer() {
   const bad = (["txn_id", "client_id", "card_id", "amount_min", "amount_max"] as const).filter((k) => local[k] && !numStr.safeParse(local[k]).success);
   const query = qs({
     date_from: f.date_from || sp.get("date_from"), date_to: f.date_to || sp.get("date_to"), label: local.label || f.label, use_chip: f.use_chip || sp.get("use_chip"),
-    txn_id: local.txn_id, client_id: local.client_id, card_id: local.card_id, amount_min: local.amount_min, amount_max: local.amount_max, mcc: local.mcc,
+    txn_id: local.txn_id, client_id: local.client_id, card_id: local.card_id, amount_min: local.amount_min, amount_max: local.amount_max, mcc: local.mcc, state: sp.get("state"),
     score_min: local.threshold > 0 ? local.threshold : null, sort: sort.id, order: sort.desc ? "desc" : "asc",
   });
   const path = bad.length ? null : `/api/transactions${query}${query ? "&" : "?"}page=${page}&page_size=25`;

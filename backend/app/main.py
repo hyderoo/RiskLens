@@ -305,7 +305,7 @@ def scenario(threshold: float = Query(..., ge=0, le=1), review_rate: float = Que
                             recovery_rate="ASSUMPTION: share of fraud value in reviewed items that could be recovered or avoided. Not observed in the data.",
                             minutes_per_review="ASSUMPTION: average analyst minutes per reviewed transaction.")
     s["formulas"] = ["reviewed = flagged x review_rate", "fraud_amount_in_reviewed = fraud_amount_in_flagged x review_rate",
-                     "hypothetical_recovered = fraud_amount_in_reviewed x recovery_rate", "review_hours = reviewed x minutes_per_review / 60"]
+                     "hypothetical_recovered = fraud_amount_in_reviewed x recovery_rate", "review_hours = reviewed x minutes_per_review / 60", "analysts_needed = review_hours / test_period_days (calendar days) / analyst_hours_per_day"]
     s["label"] = "SIMULATED SCENARIO on the held-out test period. Not actual savings or prevented loss."
     s["data_needed_for_expected_loss"] = "Chargeback/recovery outcomes, review cost per case, customer-friction cost, and fraud still undetected after review."
     return s

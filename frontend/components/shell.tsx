@@ -95,7 +95,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const current = NAV.find((n) => (n.href === "/" ? path === "/" : path.startsWith(n.href)));
   const filterable = ["/", "/transactions", "/analytics", "/scoring"].includes(path);
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen"><a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">Skip to content</a>
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
         <Brand /><Nav />
         <div className="mt-auto p-5 text-[11px] leading-relaxed text-sidebar-foreground/60">Portfolio project on a public synthetic dataset. Not connected to any bank or live transactions.</div>
@@ -108,7 +108,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="ml-auto flex items-center gap-2"><Freshness /><ThemeToggle /></div>
         </header>
         {filterable && <GlobalFilterBar />}
-        <main className="mx-auto w-full max-w-[1500px] flex-1 px-4 py-6 md:px-8">{children}</main>
+        <main id="main" tabIndex={-1} className="mx-auto outline-none w-full max-w-[1500px] flex-1 px-4 py-6 md:px-8">{children}</main>
       </div>
     </div>
   );
