@@ -17,7 +17,7 @@ export default function Scoring() {
   const [b, setB] = useState<{ medium: string; high: string; critical: string } | null>(null);
   const bands = b ?? (cfg.data ? { medium: String(cfg.data.default_bands.medium), high: String(cfg.data.default_bands.high), critical: String(cfg.data.default_bands.critical) } : null);
   const ok = bands && [bands.medium, bands.high, bands.critical].every((x) => x !== "" && !isNaN(Number(x))) && Number(bands.medium) < Number(bands.high) && Number(bands.high) < Number(bands.critical) && Number(bands.critical) <= 1 && Number(bands.medium) > 0;
-  const bq = bands ? `bands=${bands.medium},${bands.high},${bands.critical}` : "";
+  const bq = bands ? `band_medium=${bands.medium}&band_high=${bands.high}&band_critical=${bands.critical}` : "";
   const dist = useApi<Dist>(ok ? `/api/risk/distribution?${bq}` : null);
   const [f, setF] = useState({ amount: "120", use_chip: "Online Transaction", mcc: "5732", hour: "2", new_merchant: "1" });
   const [res, setRes] = useState<Res | null>(null); const [err, setErr] = useState<string | null>(null); const [busy, setBusy] = useState(false);
@@ -36,7 +36,7 @@ export default function Scoring() {
         <Panel title="Band cut-offs" kind="model" note={cfg.data?.note}>
           {bands && <div className="grid grid-cols-3 gap-3">{(["medium", "high", "critical"] as const).map((k) => <label key={k} className="text-xs capitalize text-muted-foreground">{k} from<Input className="mt-1 h-8" inputMode="decimal" value={bands[k]} onChange={(e) => setB({ ...bands, [k]: e.target.value })} /></label>)}</div>}
           {!ok && bands && <p role="alert" className="mt-2 text-xs text-destructive">Cut-offs must be increasing numbers between 0 and 1.</p>}
-          <p className="mt-3 text-[11px] text-muted-foreground">The spec's 0.2 / 0.5 / 0.8 would put every transaction in Low: calibrated scores here top out near 0.05 because fraud is rare. Defaults were chosen from the score distribution.</p>
+          <p className="mt-3 text-[11px] text-muted-foreground">The spec&apos;s 0.2 / 0.5 / 0.8 would put every transaction in Low: calibrated scores here top out near 0.05 because fraud is rare. Defaults were chosen from the score distribution.</p>
           <div className="mt-3"><Async state={dist} h="h-32">{(d) => (<table className="tnum w-full text-xs"><thead className="text-muted-foreground"><tr><th className="text-left font-normal">Band</th><th className="text-right font-normal">Txns</th><th className="text-right font-normal">Amount</th><th className="text-right font-normal">Observed fraud rate</th></tr></thead><tbody>{d.rows.map((r) => <tr key={r.band} className="border-t"><td className="py-1"><BandPill band={r.band} /></td><td className="text-right">{n0(r.n)}</td><td className="text-right">{usd(r.amount)}</td><td className="text-right">{r.labeled ? pct(r.fraud_rate_labeled, 2) : "-"}</td></tr>)}</tbody></table>)}</Async></div>
         </Panel>
         <Panel title="What-if scoring" kind="model" note="Hypothetical transaction. Fields not entered (client history, card attributes) are treated as missing.">

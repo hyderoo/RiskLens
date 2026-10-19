@@ -57,6 +57,7 @@ function Explorer() {
     { id: "label", header: "Dataset label", cell: (c) => <LabelPill status={c.row.original.label_status} /> },
     { accessorKey: "case_status", header: "Case", cell: (c) => <span className="text-xs capitalize text-muted-foreground">{c.row.original.case_status.replace("_", " ")}</span> },
   ], []);
+// eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({ data: state.data?.rows ?? [], columns: cols, getCoreRowModel: getCoreRowModel(), manualPagination: true, manualSorting: true });
   const exportHref = `${API}/api/transactions/export${query}${query ? "&" : "?"}limit=50000`;
 

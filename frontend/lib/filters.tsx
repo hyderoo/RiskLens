@@ -7,6 +7,7 @@ const Ctx = createContext<{ f: GlobalFilters; set: (p: Partial<GlobalFilters>) =
 
 export function FiltersProvider({ children }: { children: React.ReactNode }) {
   const [f, setF] = useState<GlobalFilters>(DEFAULT);
+// eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { try { const s = localStorage.getItem("rl-filters"); if (s) setF({ ...DEFAULT, ...JSON.parse(s) }); } catch {} }, []);
   const value = useMemo(() => ({
     f, set: (p: Partial<GlobalFilters>) => setF((c) => { const n = { ...c, ...p }; try { localStorage.setItem("rl-filters", JSON.stringify(n)); } catch {} return n; }),

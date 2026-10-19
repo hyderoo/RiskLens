@@ -36,6 +36,7 @@ export function useApi<T>(path: string | null) {
     api<T>(path).then((d) => { if (id === seq.current) { setData(d); setLoading(false); } })
       .catch((e: Error) => { if (id === seq.current) { setError(e.message); setLoading(false); } });
   }, [path]);
+// eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
   return { data, error, loading, reload: load };
 }

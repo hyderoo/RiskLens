@@ -53,6 +53,7 @@ function Brand() {
 
 function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme(); const [m, setM] = useState(false);
+// eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setM(true), []);
   return <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>{m && resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}</Button>;
 }
