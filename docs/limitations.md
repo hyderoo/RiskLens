@@ -12,4 +12,7 @@
 - PDF export is the browser's print-to-PDF; there is no server-side PDF.
 
 ## Next steps
-Obtain real labels for the unlabeled third; add time-based retraining and a champion/challenger check; add graph or device features if available; add auth and audit trail to case management; host the API with a persistent volume.
+Obtain real labels for the unlabeled third; add time-based retraining and a champion/challenger check; add graph or device features if available; add auth and a multi-user audit trail to case management; host the API with a persistent volume.
+
+## Browser coverage
+The repeatable Playwright suite is in `frontend/e2e/`. It requires the full scored warehouse and both local servers. It is not a test of a hosted deployment. Cross-browser and screen-reader testing remain outside this audit.

@@ -14,7 +14,8 @@ export default function Monitoring() {
   const [t, setT] = useState({ psi_warn: "0.1", psi_alert: "0.25", min_recall: "0.1", max_missing_rate: "0.5" });
   const rng: Record<string, [number, number]> = { psi_warn: [0, 5], psi_alert: [0, 5], min_recall: [0, 1], max_missing_rate: [0, 1] };
   const bad = Object.entries(t).filter(([k, v]) => v.trim() === "" || !Number.isFinite(Number(v)) || Number(v) < rng[k][0] || Number(v) > rng[k][1]).map(([k]) => k);
-  const s = useApi<Mon>(bad.length ? null : `/api/monitoring?${new URLSearchParams(t).toString()}`);
+  const reversed = !bad.length && Number(t.psi_warn) > Number(t.psi_alert);
+  const s = useApi<Mon>(bad.length || reversed ? null : `/api/monitoring?${new URLSearchParams(t).toString()}`);
   const lbl: Record<string, string> = { psi_warn: "PSI warn", psi_alert: "PSI alert", min_recall: "Min recall (0-1)", max_missing_rate: "Max missing rate (0-1)" };
   return (
     <>
@@ -28,7 +29,8 @@ export default function Monitoring() {
           </label>
         ))}
       </fieldset>
-      <Async state={s} h="h-96">{(d) => (
+      {reversed && <p role="alert" className="mb-4 text-xs text-destructive">PSI warn must not exceed PSI alert.</p>}
+      {!bad.length && !reversed && <Async state={s} h="h-96">{(d) => (
         <div className="space-y-4">
           <Panel open title={`Alerts (${d.alerts.length})`} note={`Rules: missing rate > ${pct(d.config.max_missing_rate, 0)}, PSI warn ${d.config.psi_warn} / alert ${d.config.psi_alert}, recall below ${pct(d.config.min_recall, 0)}.`}>
             {d.alerts.length === 0 ? <p className="text-sm text-muted-foreground">No rule fired.</p> : <ul className="divide-y">{d.alerts.map((a, i) => <li key={i} className="flex items-start gap-3 py-2 text-sm"><span className={`mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${sev[a.severity] ?? ""}`}>{a.severity}</span><div><div className="font-medium">{a.subject} <span className="text-xs font-normal text-muted-foreground">({a.kind.replace("_", " ")})</span></div><div className="text-xs text-muted-foreground">{a.detail}</div></div></li>)}</ul>}
@@ -44,7 +46,7 @@ export default function Monitoring() {
             <Panel title="Recall by quarter (test)" kind="model" className="lg:col-span-2"><div className="h-56"><ResponsiveContainer><BarChart data={d.performance_over_time}><CartesianGrid stroke={GRID} strokeDasharray="2 5" vertical={false} /><XAxis dataKey="quarter" {...AXIS} /><YAxis {...AXIS} width={40} tickFormatter={(v: number) => (v * 100).toFixed(0) + "%"} /><Tooltip content={<ChartTip fmt={(_n, v) => pct(v, 1)} />} /><Bar isAnimationActive={false} dataKey="recall" name="Recall" fill="var(--chart-2)" /><Bar isAnimationActive={false} dataKey="precision" name="Precision" fill="var(--chart-1)" /></BarChart></ResponsiveContainer></div></Panel>
           </div>
           <p className="text-[11px] text-muted-foreground">{d.disclaimer}</p>
-        </div>)}</Async>
+        </div>)}</Async>}
     </>
   );
 }

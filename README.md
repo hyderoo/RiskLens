@@ -2,9 +2,9 @@
 
 Fraud and transaction risk analytics on a public synthetic card-transaction dataset (13.3M rows). A DuckDB warehouse, a calibrated LightGBM risk model, a FastAPI backend and a Next.js dashboard with ten pages: executive overview, transaction explorer, fraud analytics, risk scoring, model lab, explainability, exposure scenarios, monitoring, case management and reports.
 
-![Demo: overview, drill-down, explorer, drawer, model threshold, scenario sliders, explain lookup](docs/demo.gif)
+![Demo: corrected overview, fraud drill-down, explorer, drawer, analytics, model lab, exposure and explainability](docs/demo.gif)
 
-A longer MP4 of the same walkthrough is in [docs/demo.mp4](docs/demo.mp4). It is a screen capture of the real app running locally on the full dataset, nothing mocked.
+An MP4 of the same silent, slideshow-style walkthrough is in [docs/demo.mp4](docs/demo.mp4). It is a screen capture of the real app running locally on the full dataset, nothing mocked.
 
 ## What it does
 - **Warehouse**: raw CSV/JSON to DuckDB with leakage-safe features (client and card history computed from earlier rows only). Card numbers, CVVs and addresses are dropped.
@@ -21,7 +21,7 @@ A longer MP4 of the same walkthrough is in [docs/demo.mp4](docs/demo.mp4). It is
 These numbers are modest and shown as they are. Quarterly PR-AUC ranges from 0.027 to 0.155. Top drivers by mean |SHAP|: mcc, new_merchant_for_client, is_online, use_chip, merchant_state. See [docs/limitations.md](docs/limitations.md) for what this does and does not show.
 
 ## Screenshots
-Captured from the running app (full 13.3M-row dataset, local). Desktop 1440 px wide.
+Captured from the running app (full 13.3M-row dataset, local). Desktop 1440 px wide, full-page captures.
 
 | | |
 |---|---|
@@ -35,7 +35,7 @@ Mobile (390 px): [overview](docs/screenshots/mobile-overview.png), [model lab](d
 
 
 ## Dataset
-The files in `data/` match the Kaggle dataset ["Financial Transactions Dataset: Analytics"](https://www.kaggle.com/datasets/computingvictor/transactions-fraud-datasets) (synthetic card transactions, 2010-2019). Download it from Kaggle and put these five files in `data/`: `transactions_data.csv` (about 1.2 GB), `users_data.csv`, `cards_data.csv`, `mcc_codes.json`, `train_fraud_labels.json` (about 150 MB). The dataset is not in this repo (size and licence), and the raw files are never modified. Card numbers, CVVs and addresses are dropped when the warehouse is built.
+The original source archive is [available on Google Drive](https://drive.google.com/file/d/1ft7ZQdDvWowxqnh_bNvLPfjjf2IEh9ca/view?usp=sharing). The files in `data/` have the same names as the Kaggle dataset ["Financial Transactions Dataset: Analytics"](https://www.kaggle.com/datasets/computingvictor/transactions-fraud-datasets) (synthetic card transactions, 2010-2019); the Kaggle listing has not been verified as the exact same archive. Download the original archive or verify the Kaggle copy and put these five files in `data/`: `transactions_data.csv` (about 1.2 GB), `users_data.csv`, `cards_data.csv`, `mcc_codes.json`, `train_fraud_labels.json` (about 150 MB). The dataset is not in this repo (size and licence), and the raw files are never modified. Card numbers, CVVs and addresses are dropped when the warehouse is built.
 
 ## Run locally
 Requirements:
@@ -52,7 +52,7 @@ export RISKLENS_DUCKDB_MEMORY=600MB        # lower (e.g. 250MB) on small machine
 python -m backend.pipeline.build_warehouse # build the DuckDB warehouse
 python -m backend.models.train             # train, writes backend/artifacts/metrics.json
 python -m backend.models.score_all         # write risk scores into the warehouse
-python -m pytest backend/tests -q
+python -m pytest backend/tests -q      # 22 tests
 uvicorn backend.app.main:app --port 8000
 
 # 2. Frontend (new terminal)
@@ -65,9 +65,9 @@ Run the heavy steps one at a time on a small machine. See [.env.example](.env.ex
 ## Limitations (as audited)
 - Synthetic data. Test PR-AUC is 0.051, so this is a triage aid, not a detector. Scores before 2017 are in-sample.
 - Band defaults are 0.003 / 0.01 / 0.03, not the 0.2 / 0.5 / 0.8 examples in the brief, because calibrated scores top out near 0.05.
-- Not built: a server-generated PDF (the report uses the browser's print-to-PDF), drill-down from the hour, weekday and card-brand charts to transactions, and browser end-to-end tests.
+- Not built: a server-generated PDF (the report uses the browser's print-to-PDF), and drill-down from the hour, weekday, card-brand and card-type charts to transactions.
 - Cases are a single-user local SQLite file with a change history. No login and no multi-user access.
-- Tested only in headless Chrome, with no screen-reader walkthrough and no contrast check on the dark theme.
+- Browser regression coverage uses Chromium only. No Safari, Firefox, real-device or screen-reader walkthrough. Basic foreground/background token contrast is checked in both themes, not a full accessibility certification.
 - Chrome plus the full API on a 2 GB machine ran out of memory once (see Run locally). Parallel load was not tested.
 
 ## Why there is no live demo link
@@ -75,10 +75,15 @@ This is deliberate. The full app needs a 2.3 GB DuckDB file and about 1.2 GB of 
 
 ## Tests
 ```bash
-python -m pytest backend/tests -q      # 18 tests
+python -m pytest backend/tests -q      # 22 tests
 cd frontend && npm test                # 9 unit tests (formatting, API retry)
 cd frontend && npx eslint . && npx tsc --noEmit && npm run build
+# With the scored full warehouse, API on :8000 and frontend on :3000:
+npm run test:e2e                       # 17 tests, including 132 page/viewport/theme checks
 ```
+
+## UI and feature re-audit
+See [docs/audit-2026-10-19.md](docs/audit-2026-10-19.md) for the latest checked scope, fixes and remaining limits. Exact KPI values are retained; columns now respond to the available content width instead of forcing six metrics beside the sidebar.
 
 ## Docs
 [Methodology](docs/methodology.md) · [Data dictionary](docs/data-dictionary.md) · [Architecture and deployment notes](docs/architecture.md) · [Limitations](docs/limitations.md)

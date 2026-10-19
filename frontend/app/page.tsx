@@ -33,7 +33,7 @@ export default function Overview() {
         const bands = ["low", "medium", "high", "critical"].map((b) => d.risk_distribution.find((r) => r.band === b) ?? { band: b, n: 0, labeled: 0, fraud: 0, amount: 0 });
         return (
           <div className="space-y-4">
-            <div className="kpi-band grid grid-cols-2 gap-x-3 gap-y-5 md:grid-cols-3 xl:grid-cols-6">
+            <div className="kpi-band kpi-grid">
               <Kpi label="Transactions" value={n0(k.transactions)} sub={`${n0(k.labeled)} labeled · ${n0(k.unlabeled)} unlabeled`} kind="historical" href={dlq("")} hint="All transactions matching the filters." />
               <Kpi label="Total value" value={usdC(k.total_amount)} sub="Sum of signed amounts" kind="historical" />
               <Kpi label="Confirmed fraud" value={n0(k.confirmed_fraud)} sub={`${pct(k.fraud_rate_labeled, 3)} of labeled`} kind="historical" href={dlq("label=fraud")} hint="Rows labeled Yes. Unlabeled rows are excluded from the rate." />

@@ -85,3 +85,12 @@ def test_case_store_persistence_and_history(tmp_path, monkeypatch):
     c2 = cases.update(c["id"], status="closed", disposition="false_positive", notes="cleared")
     assert c2["status"] == "closed" and len(c2["history"]) == 4  # created + status + disposition + notes
     assert cases.listing("closed")[0]["txn_id"] == 42 and cases.update(999, status="open") is None
+
+def test_end_date_uses_exclusive_next_midnight():
+    w, p = Filters(date_to="2019-10-31").where()
+    assert "date < ?" in w and p == ["2019-11-01"]
+
+
+def test_ranges_are_ordered():
+    for args in ({"amount_min": 2, "amount_max": 1}, {"date_from": "2019-01-02", "date_to": "2019-01-01"}, {"score_min": .8, "score_max": .2}):
+        with pytest.raises(ValueError): Filters(**args)

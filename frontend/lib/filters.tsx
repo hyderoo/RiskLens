@@ -10,8 +10,8 @@ export function FiltersProvider({ children }: { children: React.ReactNode }) {
 // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { try { const s = localStorage.getItem("rl-filters"); if (s) setF({ ...DEFAULT, ...JSON.parse(s) }); } catch {} }, []);
   const value = useMemo(() => ({
-    f, set: (p: Partial<GlobalFilters>) => setF((c) => { const n = { ...c, ...p }; try { localStorage.setItem("rl-filters", JSON.stringify(n)); } catch {} return n; }),
-    reset: () => { setF(DEFAULT); try { localStorage.removeItem("rl-filters"); } catch {} },
+    f, set: (p: Partial<GlobalFilters>) => { const url = new URL(window.location.href); for (const key of Object.keys(p)) url.searchParams.delete(key); window.history.replaceState(null, "", url); setF((c) => { const n = { ...c, ...p }; try { localStorage.setItem("rl-filters", JSON.stringify(n)); } catch {} return n; }); },
+    reset: () => { const url = new URL(window.location.href); for (const key of Object.keys(DEFAULT)) url.searchParams.delete(key); window.history.replaceState(null, "", url); setF(DEFAULT); try { localStorage.removeItem("rl-filters"); } catch {} },
   }), [f]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -19,3 +19,5 @@ node_modules/
 .next/
 frontend/.vercel
 *.log
+frontend/test-results/
+frontend/playwright-report/

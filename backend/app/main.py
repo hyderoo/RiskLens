@@ -345,6 +345,7 @@ def _drift():
 @app.get("/api/monitoring")
 def monitoring(psi_warn: float = Query(0.10, ge=0, le=5), psi_alert: float = Query(0.25, ge=0, le=5), min_recall: float = Query(0.10, ge=0, le=1),
                max_missing_rate: float = Query(0.5, ge=0, le=1)):
+    if psi_warn > psi_alert: raise HTTPException(422, "PSI warn must not exceed PSI alert")
     qual = _quality(); drift = _drift(); perf = metrics()["performance_over_time"]; alerts = []
     for d in drift:
         if d["psi"] >= psi_alert: alerts.append(dict(kind="input_drift", severity="high", subject=d["feature"], detail=f"PSI {d['psi']:.3f} ({d['compared']}) >= {psi_alert}"))

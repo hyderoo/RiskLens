@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, Download } from "lucide-react";
@@ -26,7 +26,8 @@ type Detail = {
 };
 type Meta = { sort?: "date" | "amount" | "risk_score"; right?: boolean };
 
-const numStr = z.string().regex(/^-?\d*\.?\d*$/);
+const numStr = z.string().regex(/^-?\d+(?:\.\d+)?$/);
+const idStr = z.string().regex(/^\d+$/);
 
 function Explorer() {
   const sp = useSearchParams(); const { f } = useFilters();
@@ -34,14 +35,16 @@ function Explorer() {
   const [sort, setSort] = useState<{ id: "date" | "amount" | "risk_score"; desc: boolean }>({ id: sp.get("sort") === "risk_score" ? "risk_score" : sp.get("sort") === "amount" ? "amount" : "date", desc: true });
   const [local, setLocal] = useState({ txn_id: sp.get("txn_id") ?? "", client_id: sp.get("client_id") ?? "", card_id: "", amount_min: "", amount_max: "", label: sp.get("label") ?? "", mcc: sp.get("mcc") ?? "", threshold: sp.get("score_min") ? Number(sp.get("score_min")) : 0 });
   const [open, setOpen] = useState<number | null>(null);
-  const bad = (["txn_id", "client_id", "card_id", "amount_min", "amount_max"] as const).filter((k) => local[k] && !numStr.safeParse(local[k]).success);
+  const bad = (["txn_id", "client_id", "card_id", "amount_min", "amount_max"] as const).filter((k) => local[k] && !(k.endsWith("id") ? idStr : numStr).safeParse(local[k]).success);
   const query = qs({
-    date_from: f.date_from || sp.get("date_from"), date_to: f.date_to || sp.get("date_to"), label: local.label || f.label, use_chip: f.use_chip || sp.get("use_chip"),
+    date_from: sp.get("date_from") ?? f.date_from, date_to: sp.get("date_to") ?? f.date_to, label: local.label || f.label, use_chip: sp.get("use_chip") ?? f.use_chip,
     txn_id: local.txn_id, client_id: local.client_id, card_id: local.card_id, amount_min: local.amount_min, amount_max: local.amount_max, mcc: local.mcc, state: sp.get("state"),
     score_min: local.threshold > 0 ? local.threshold : null, sort: sort.id, order: sort.desc ? "desc" : "asc",
   });
   const path = bad.length ? null : `/api/transactions${query}${query ? "&" : "?"}page=${page}&page_size=25`;
   const state = useApi<Page>(path);
+  // Global filter changes must not leave the user on an out-of-range page.
+  useEffect(() => { setPage(1); }, [f.date_from, f.date_to, f.label, f.use_chip]);
   const upd = (p: Partial<typeof local>) => { setLocal((c) => ({ ...c, ...p })); setPage(1); };
   const toggle = (id: "date" | "amount" | "risk_score") => { setSort((s) => ({ id, desc: s.id === id ? !s.desc : true })); setPage(1); };
 
@@ -81,7 +84,7 @@ function Explorer() {
         </div>
         {bad.length > 0 && <p role="alert" className="text-xs text-destructive">Enter numbers only in: {bad.join(", ")}.</p>}
       </Panel>
-      <Async state={state} h="h-96">{(d) => (
+      {bad.length === 0 && <Async state={state} h="h-96">{(d) => (
         <div className="rise border-y-2 border-foreground">
           {d.rows.length === 0 ? <EmptyState title="No transactions match these filters" text="Loosen the date range, label or score filter." /> : (
             <div className="overflow-x-auto"><Table>
@@ -89,11 +92,11 @@ function Explorer() {
                 return <TableHead key={h.id} className={m?.right ? "text-right" : ""}>{m?.sort ? <button className="inline-flex items-center gap-1 hover:text-foreground" onClick={() => toggle(m.sort!)}>{flexRender(h.column.columnDef.header, h.getContext())}{sort.id === m.sort ? (sort.desc ? <ArrowDown className="size-3" /> : <ArrowUp className="size-3" />) : <ArrowUpDown className="size-3 opacity-40" />}</button> : flexRender(h.column.columnDef.header, h.getContext())}</TableHead>; })}</TableRow>)}</TableHeader>
               <TableBody>{table.getRowModel().rows.map((r) => <TableRow key={r.id} className="cursor-pointer" onClick={() => setOpen(r.original.id)}>{r.getVisibleCells().map((c) => <TableCell key={c.id} className={(c.column.columnDef.meta as Meta | undefined)?.right ? "text-right" : ""}>{flexRender(c.column.columnDef.cell, c.getContext())}</TableCell>)}</TableRow>)}</TableBody>
             </Table></div>)}
-          <div className="flex items-center justify-between border-t px-4 py-2.5 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t px-4 py-2.5 text-xs text-muted-foreground">
             <span className="tnum">{n0(d.total)} matching · page {n0(d.page)} of {n0(d.pages)}</span>
             <div className="flex gap-2"><Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button><Button size="sm" variant="outline" disabled={page >= d.pages} onClick={() => setPage(page + 1)}>Next</Button></div>
           </div>
-        </div>)}</Async>
+        </div>)}</Async>}
       <DetailDrawer id={open} onClose={() => setOpen(null)} />
     </>
   );
@@ -101,10 +104,12 @@ function Explorer() {
 
 function DetailDrawer({ id, onClose }: { id: number | null; onClose: () => void }) {
   const s = useApi<Detail>(id ? `/api/transactions/${id}` : null);
+  const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState(""); const [msg, setMsg] = useState<string | null>(null); const [sev, setSev] = useState("medium");
   async function open_case() {
+    if (saving) return; setSaving(true);
     try { const c = await api<{ id: number }>("/api/cases", { method: "POST", body: JSON.stringify({ txn_id: id, severity: sev, notes }) }); setMsg(`Case #${c.id} opened. Manage it under Investigations.`); s.reload(); }
-    catch (e) { setMsg((e as Error).message); }
+    catch (e) { setMsg((e as Error).message); } finally { setSaving(false); }
   }
   const t = s.data?.transaction;
   return (
@@ -114,7 +119,7 @@ function DetailDrawer({ id, onClose }: { id: number | null; onClose: () => void 
         <div className="space-y-5 px-4 pb-6">
           {s.error && <ErrorState message={s.error} onRetry={s.reload} />}
           {s.loading && <div className="h-40 animate-pulse rounded bg-muted" />}
-          {s.data && t && <>
+          {!s.loading && !s.error && s.data && t && <>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               {([["Time", dt(String(t.date))], ["Amount", usd(Number(t.amount), 2)], ["Channel", String(t.use_chip)], ["MCC", `${t.mcc} ${t.mcc_description ?? ""}`], ["Merchant", `${t.merchant_city}${t.merchant_state ? ", " + t.merchant_state : ""}`], ["Errors", String(t.errors ?? "none")], ["Client / Card", `${t.client_id} / ${t.card_id}`], ["Split", String(t.split)]] as const).map(([k, v]) => <div key={k}><dt className="text-xs text-muted-foreground">{k}</dt><dd className="tnum">{v}</dd></div>)}
             </dl>
@@ -133,8 +138,8 @@ function DetailDrawer({ id, onClose }: { id: number | null; onClose: () => void 
             <div><h3 className="mb-1 text-sm font-semibold">Recent client activity</h3><table className="tnum w-full text-xs"><tbody>{s.data.recent_client_activity.map((a) => <tr key={a.id} className="border-t"><td className="py-1">{dt(a.date)}</td><td>{usd(a.amount, 2)}</td><td className="text-right">{score(a.risk_score)}</td></tr>)}</tbody></table></div>
             <div className="space-y-2 rounded-lg border p-3"><h3 className="text-sm font-semibold">Investigation</h3>
               {s.data.cases.length > 0 && <p className="text-xs text-muted-foreground">Existing: {s.data.cases.map((c) => `#${c.id} (${c.status})`).join(", ")}</p>}
-              <Textarea placeholder="Notes for the case" value={notes} maxLength={4000} onChange={(e) => setNotes(e.target.value)} />
-              <div className="flex items-center gap-2"><Select value={sev} onValueChange={(v) => setSev(v ?? "medium")}><SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger><SelectContent>{["low", "medium", "high", "critical"].map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select><Button size="sm" onClick={open_case}>Open case</Button></div>
+              <Textarea aria-label="Case notes" placeholder="Notes for the case" value={notes} maxLength={4000} onChange={(e) => setNotes(e.target.value)} />
+              <div className="flex items-center gap-2"><Select value={sev} onValueChange={(v) => setSev(v ?? "medium")}><SelectTrigger aria-label="Case severity" className="h-8 w-32"><SelectValue /></SelectTrigger><SelectContent>{["low", "medium", "high", "critical"].map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select><Button size="sm" disabled={saving} onClick={open_case}>{saving ? "Opening..." : "Open case"}</Button></div>
               {msg && <p role="status" className="text-xs text-muted-foreground">{msg}</p>}</div>
           </>}
         </div>

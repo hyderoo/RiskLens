@@ -50,3 +50,12 @@ def test_scenario_formulas_document_analyst_load():
     r = client.get("/api/scenario", params={"threshold": 0.03, "review_rate": 0.5})
     assert r.status_code == 200
     assert any(f.startswith("analysts_needed") for f in r.json()["formulas"])
+
+def test_monitoring_rejects_reversed_psi_thresholds():
+    assert client.get("/api/monitoring?psi_warn=0.5&psi_alert=0.1").status_code == 422
+
+
+def test_reversed_ranges_and_out_of_bounds_are_422():
+    for query in ("amount_min=100&amount_max=1", "date_from=2019-02-01&date_to=2019-01-01", "score_min=0.8&score_max=0.2", "amount_min=1000001"):
+        r = client.get('/api/transactions?' + query)
+        assert r.status_code == 422, (query, r.text)

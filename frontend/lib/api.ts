@@ -40,12 +40,16 @@ export function useApi<T>(path: string | null) {
   const [loading, setLoading] = useState(true);
   const seq = useRef(0);
   const load = useCallback(() => {
-    if (!path) return;
+    if (!path) { ++seq.current; setLoading(false); setData(null); setError(null); return; }
     const id = ++seq.current; setLoading(true); setError(null);
     api<T>(path).then((d) => { if (id === seq.current) { setData(d); setLoading(false); } })
       .catch((e: Error) => { if (id === seq.current) { setError(e.message); setLoading(false); } });
   }, [path]);
 // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); return () => {
+    // This ref is a request sequence, not a DOM node; invalidate pending replies.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    ++seq.current;
+  }; }, [load]);
   return { data, error, loading, reload: load };
 }

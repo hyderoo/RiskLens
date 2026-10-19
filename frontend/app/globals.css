@@ -197,3 +197,29 @@ thead th { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; fo
 tbody tr { border-color: var(--border); }
 tbody tr:hover { background: color-mix(in srgb, var(--accent) 55%, transparent); }
 .stripe-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--card) 70%, transparent); }
+
+/* KPI columns respond to available content width, including the fixed sidebar.
+   Never force six long currency/count values into narrow desktop columns. */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1.4rem 1rem; }
+.kpi { min-width: 0; }
+.kpi .eyebrow { min-height: 2.5em; align-items: baseline; }
+.kpi-value { font-size: clamp(1.5rem, 2.3vw, 2rem); overflow-wrap: anywhere; }
+.kpi > div { overflow-wrap: anywhere; }
+@media (max-width: 479px) {
+  .kpi-band { padding: 1rem; }
+  .kpi-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .kpi .eyebrow { min-height: 0; }
+  .kpi-value { font-size: 2rem; }
+}
+/* Long feature names and synthetic merchant labels must not widen grid tracks. */
+main > *, .panel > *, dl > div { min-width: 0; }
+.panel li, dd { overflow-wrap: anywhere; }
+@media (max-width: 479px) {
+  /* Multi-part scenario currency values remain readable at 320px. */
+  .panel .tnum { overflow-wrap: anywhere; }
+}
+/* Dense tables scroll inside their panel instead of touching neighboring cells. */
+.panel table { border-collapse: separate; border-spacing: 0; }
+.panel table th:not(:last-child), .panel table td:not(:last-child) { padding-right: .75rem; }
+.panel table td { vertical-align: top; }
+.panel table .tnum, .panel table td.text-right { white-space: nowrap; }

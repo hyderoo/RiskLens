@@ -23,10 +23,10 @@ export function PageHeader({ title, subtitle, kind, children }: { title: string;
   const letter = SECTION[usePathname()];
   return (
     <div className="rise mb-8 flex flex-wrap items-start justify-between gap-4">
-      <div className="flex gap-4">
+      <div className="flex min-w-0 gap-3 sm:gap-4">
         {letter && <span aria-hidden className="serif -mt-1 select-none text-[64px] font-semibold leading-[0.85] text-chart-5">{letter}</span>}
         <div>
-          <h1 className="text-[36px] leading-[1.05]">{title}</h1>
+          <h1 className="text-[30px] leading-[1.1] sm:text-[36px]">{title}</h1>
           {subtitle && <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">{subtitle}</p>}
           {kind && <div className="mt-3"><Provenance kind={kind} /></div>}
         </div>
@@ -40,11 +40,11 @@ export function Kpi({ label, value, sub, href, kind, hint }: { label: string; va
   const body = (
     <div className="kpi rise h-full py-1 pr-2 transition-colors" title={hint}>
       <div className="eyebrow flex items-center gap-1.5">{kind && <span aria-label={KIND[kind].label} title={KIND[kind].label} className="text-[8px]">{KIND[kind].glyph}</span>}{label}</div>
-      <div className="tnum serif mt-1.5 text-[26px] leading-none sm:text-[32px]">{value}</div>
+      <div className="kpi-value tnum serif mt-1.5 leading-tight">{value}</div>
       {sub && <div className="mt-2 text-[11.5px] leading-snug text-muted-foreground">{sub}</div>}
     </div>
   );
-  return href ? <Link href={href} className="block focus-visible:outline-2 focus-visible:outline-ring">{body}</Link> : body;
+  return href ? <Link href={href} className="block min-w-0 rounded-sm focus-visible:outline-2 focus-visible:outline-ring">{body}</Link> : body;
 }
 
 export function Panel({ title, kind, note, children, className, action, open }: { title: string; kind?: Kind; note?: string; children: React.ReactNode; className?: string; action?: React.ReactNode; open?: boolean }) {
@@ -52,7 +52,7 @@ export function Panel({ title, kind, note, children, className, action, open }: 
     <section className={cn("panel rise min-w-0", open && "open", className)}>
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div className="panel-fig"><h2 className="text-[19px] leading-tight">{title}</h2></div>
-        <div className="flex items-center gap-3">{action}{kind && <Provenance kind={kind} />}</div>
+        <div className="flex min-w-0 flex-wrap items-center gap-3">{action}{kind && <Provenance kind={kind} />}</div>
       </div>
       <div className="space-y-3 overflow-x-auto">{children}</div>
       {note && <p className="panel-note">{note}</p>}
