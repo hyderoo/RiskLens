@@ -1,6 +1,7 @@
 """Read-only DuckDB access. Endpoints never accept SQL; every query is built from whitelisted columns with bound parameters."""
 from __future__ import annotations
 import threading
+import os
 import duckdb, pandas as pd
 from ..pipeline.config import DB_PATH, WORK_DIR
 
@@ -14,7 +15,7 @@ def con() -> duckdb.DuckDBPyConnection:
         if not DB_PATH.exists():
             raise FileNotFoundError("warehouse")
         _con = duckdb.connect(str(DB_PATH), read_only=True)
-        _con.execute(f"PRAGMA memory_limit='700MB'; PRAGMA threads=2; PRAGMA temp_directory='{WORK_DIR / 'tmp'}'")
+        _con.execute(f"PRAGMA memory_limit='{os.environ.get('RISKLENS_DUCKDB_MEMORY', '700MB')}'; PRAGMA threads=2; PRAGMA temp_directory='{WORK_DIR / 'tmp'}'")
     return _con
 
 

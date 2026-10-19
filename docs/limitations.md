@@ -8,7 +8,7 @@
 - Calibrated scores top out near 0.05, so risk bands use data-driven cut-offs (0.003 / 0.01 / 0.03) instead of 0.2 / 0.5 / 0.8.
 - Exposure figures are simulated from assumptions (recovery rate, minutes per review). No chargeback, recovery or cost data exists in the dataset.
 - Explanations are SHAP-style contributions of the model, not causes of fraud.
-- Cases are stored in a local SQLite file for a single user. No auth, no audit log.
+- Cases are stored in a local SQLite file for a single user, with a per-case change history. No auth.
 - PDF export is the browser's print-to-PDF; there is no server-side PDF.
 
 ## Next steps
