@@ -1,5 +1,5 @@
 "use client";
-export const AXIS = { stroke: "var(--muted-foreground)", fontSize: 10.5, tickLine: false, axisLine: { stroke: "var(--border)" } } as const;
+export const AXIS = { stroke: "var(--muted-foreground)", fontSize: 10.5, fontFamily: "var(--font-plex-sans)", tickLine: false, axisLine: { stroke: "var(--border)" } } as const;
 export const GRID = "var(--border)";
 export function ChartTip({ active, payload, label, fmt }: { active?: boolean; payload?: { name: string; value: number; color: string; payload: Record<string, unknown> }[]; label?: string | number; fmt?: (name: string, v: number) => string }) {
   if (!active || !payload?.length) return null;

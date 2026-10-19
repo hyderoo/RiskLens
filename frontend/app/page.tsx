@@ -51,7 +51,7 @@ export default function Overview() {
                     <YAxis yAxisId="l" {...AXIS} tickFormatter={compact} width={44} />
                     <YAxis yAxisId="r" orientation="right" {...AXIS} tickFormatter={(v: number) => v.toFixed(2) + "%"} width={48} />
                     <Tooltip content={<ChartTip fmt={(n, v) => n.includes("rate") ? v.toFixed(3) + "%" : n0(v)} />} />
-                    <Bar isAnimationActive={false} yAxisId="l" dataKey="n" name="Transactions" fill="var(--chart-1)" fillOpacity={0.45} />
+                    <Bar isAnimationActive={false} yAxisId="l" dataKey="n" name="Transactions" fill="var(--chart-2)" />
                     <Line isAnimationActive={false} yAxisId="r" dataKey="rate" name="Fraud rate (labeled)" stroke="var(--chart-5)" strokeWidth={2} dot={false} connectNulls />
                   </ComposedChart>
                 </ResponsiveContainer></div>

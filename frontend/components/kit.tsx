@@ -7,9 +7,9 @@ import Link from "next/link";
 
 export type Kind = "historical" | "model" | "simulated";
 const KIND: Record<Kind, { label: string; glyph: string; cls: string }> = {
-  historical: { label: "Historical data", glyph: "■", cls: "text-chart-1" },
+  historical: { label: "Historical data", glyph: "■", cls: "text-accent2" },
   model: { label: "Model estimate", glyph: "◆", cls: "text-chart-3" },
-  simulated: { label: "Simulated scenario", glyph: "◇", cls: "text-chart-5" },
+  simulated: { label: "Simulated scenario", glyph: "◇", cls: "text-primary" },
 };
 export function Provenance({ kind, className }: { kind: Kind; className?: string }) {
   const k = KIND[kind];
@@ -18,10 +18,10 @@ export function Provenance({ kind, className }: { kind: Kind; className?: string
 
 export function PageHeader({ title, subtitle, kind, children }: { title: string; subtitle?: string; kind?: Kind; children?: React.ReactNode }) {
   return (
-    <div className="rise mb-7 flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-4">
+    <div className="rise mb-7 flex flex-wrap items-end justify-between gap-3 border-b-2 border-primary pb-4">
       <div>
         {kind && <div className="mb-2"><Provenance kind={kind} /></div>}
-        <h1 className="text-[30px] font-medium leading-tight tracking-tight">{title}</h1>
+        <h1 className="text-[30px] font-medium leading-tight ">{title}</h1>
         {subtitle && <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-muted-foreground">{subtitle}</p>}
       </div>
       <div className="no-print flex items-center gap-2">{children}</div>
@@ -36,7 +36,7 @@ export function Kpi({ label, value, sub, href, kind, hint }: { label: string; va
         <span className="eyebrow">{label}</span>
         {kind && <span aria-label={KIND[kind].label} title={KIND[kind].label} className={cn("text-[9px]", KIND[kind].cls)}>{KIND[kind].glyph}</span>}
       </div>
-      <div className="tnum serif mt-1 text-[28px] font-medium leading-none tracking-tight">{value}</div>
+      <div className="tnum serif mt-1 text-[28px] font-medium leading-none ">{value}</div>
       {sub && <div className="mt-1.5 text-[11.5px] leading-snug text-muted-foreground">{sub}</div>}
     </div>
   );
@@ -47,7 +47,7 @@ export function Panel({ title, kind, note, children, className, action }: { titl
   return (
     <section className={cn("rise min-w-0 border-t-2 border-foreground pt-3", className)}>
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-[17px] font-medium tracking-tight">{title}</h2>
+        <h2 className="text-[17px] font-medium ">{title}</h2>
         <div className="flex items-center gap-3">{action}{kind && <Provenance kind={kind} />}</div>
       </div>
       <div className="space-y-3 overflow-x-auto">{children}</div>
