@@ -88,3 +88,6 @@ Next.js 16 (App Router, TypeScript strict), Tailwind, shadcn/ui, Recharts, TanSt
 
 ## Notes
 Portfolio project on synthetic data. Not connected to any bank or live transactions, and not suitable for real fraud decisions.
+
+## License
+MIT, see [LICENSE](LICENSE). The dataset is not covered by this license and is not included in the repo.
