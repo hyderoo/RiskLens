@@ -82,7 +82,7 @@ function Explorer() {
         {bad.length > 0 && <p role="alert" className="text-xs text-destructive">Enter numbers only in: {bad.join(", ")}.</p>}
       </Panel>
       <Async state={state} h="h-96">{(d) => (
-        <div className="rise rounded-xl border bg-card">
+        <div className="rise border-y-2 border-foreground">
           {d.rows.length === 0 ? <EmptyState title="No transactions match these filters" text="Loosen the date range, label or score filter." /> : (
             <div className="overflow-x-auto"><Table>
               <TableHeader>{table.getHeaderGroups().map((hg) => <TableRow key={hg.id}>{hg.headers.map((h) => { const m = h.column.columnDef.meta as Meta | undefined;

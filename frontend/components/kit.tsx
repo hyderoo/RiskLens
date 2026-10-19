@@ -1,28 +1,28 @@
 "use client";
 import { AlertTriangle, Inbox } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export type Kind = "historical" | "model" | "simulated";
-const KIND: Record<Kind, { label: string; cls: string }> = {
-  historical: { label: "Historical data", cls: "border-chart-2/40 text-chart-2 bg-chart-2/10" },
-  model: { label: "Model estimate", cls: "border-chart-3/50 text-chart-3 bg-chart-3/10" },
-  simulated: { label: "Simulated scenario", cls: "border-chart-4/50 text-chart-4 bg-chart-4/10" },
+const KIND: Record<Kind, { label: string; glyph: string; cls: string }> = {
+  historical: { label: "Historical data", glyph: "■", cls: "text-chart-1" },
+  model: { label: "Model estimate", glyph: "◆", cls: "text-chart-3" },
+  simulated: { label: "Simulated scenario", glyph: "◇", cls: "text-chart-5" },
 };
 export function Provenance({ kind, className }: { kind: Kind; className?: string }) {
   const k = KIND[kind];
-  return <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider", k.cls, className)}><span className="size-1.5 rounded-full bg-current" />{k.label}</span>;
+  return <span className={cn("eyebrow inline-flex items-center gap-1.5 whitespace-nowrap", className)}><span aria-hidden className={cn("text-[9px]", k.cls)}>{k.glyph}</span>{k.label}</span>;
 }
 
 export function PageHeader({ title, subtitle, kind, children }: { title: string; subtitle?: string; kind?: Kind; children?: React.ReactNode }) {
   return (
-    <div className="rise mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div className="rise mb-7 flex flex-wrap items-end justify-between gap-3 border-b-2 border-foreground pb-4">
       <div>
-        <div className="flex items-center gap-3"><h1 className="text-2xl font-semibold tracking-tight">{title}</h1>{kind && <Provenance kind={kind} />}</div>
-        {subtitle && <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{subtitle}</p>}
+        {kind && <div className="mb-2"><Provenance kind={kind} /></div>}
+        <h1 className="text-[30px] font-medium leading-tight tracking-tight">{title}</h1>
+        {subtitle && <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-muted-foreground">{subtitle}</p>}
       </div>
       <div className="no-print flex items-center gap-2">{children}</div>
     </div>
@@ -31,35 +31,35 @@ export function PageHeader({ title, subtitle, kind, children }: { title: string;
 
 export function Kpi({ label, value, sub, href, kind, hint }: { label: string; value: React.ReactNode; sub?: React.ReactNode; href?: string; kind?: Kind; hint?: string }) {
   const body = (
-    <Card className={cn("rise h-full gap-1 p-4 transition-colors", href && "hover:border-primary/60 hover:bg-accent/40")} title={hint}>
+    <div className={cn("rise h-full border-t border-foreground/80 px-0 pb-3 pt-2.5 transition-colors", href && "hover:bg-accent/60")} title={hint}>
       <div className="flex items-start justify-between gap-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</span>
-        {kind && <span className={cn("size-2 rounded-full", kind === "historical" ? "bg-chart-2" : kind === "model" ? "bg-chart-3" : "bg-chart-4")} title={KIND[kind].label} />}
+        <span className="eyebrow">{label}</span>
+        {kind && <span aria-label={KIND[kind].label} title={KIND[kind].label} className={cn("text-[9px]", KIND[kind].cls)}>{KIND[kind].glyph}</span>}
       </div>
-      <div className="tnum text-2xl font-semibold tracking-tight">{value}</div>
-      {sub && <div className="text-xs text-muted-foreground">{sub}</div>}
-    </Card>
+      <div className="tnum serif mt-1 text-[28px] font-medium leading-none tracking-tight">{value}</div>
+      {sub && <div className="mt-1.5 text-[11.5px] leading-snug text-muted-foreground">{sub}</div>}
+    </div>
   );
-  return href ? <Link href={href} className="block rounded-xl focus-visible:outline-2 focus-visible:outline-ring">{body}</Link> : body;
+  return href ? <Link href={href} className="block focus-visible:outline-2 focus-visible:outline-ring">{body}</Link> : body;
 }
 
 export function Panel({ title, kind, note, children, className, action }: { title: string; kind?: Kind; note?: string; children: React.ReactNode; className?: string; action?: React.ReactNode }) {
   return (
-    <Card className={cn("rise gap-3 p-4", className)}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        <div className="flex items-center gap-2">{action}{kind && <Provenance kind={kind} />}</div>
+    <section className={cn("rise min-w-0 border-t-2 border-foreground pt-3", className)}>
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-[17px] font-medium tracking-tight">{title}</h2>
+        <div className="flex items-center gap-3">{action}{kind && <Provenance kind={kind} />}</div>
       </div>
-      {children}
-      {note && <p className="text-xs text-muted-foreground">{note}</p>}
-    </Card>
+      <div className="space-y-3 overflow-x-auto">{children}</div>
+      {note && <p className="mt-3 border-t border-border pt-2 text-[11.5px] italic leading-relaxed text-muted-foreground">{note}</p>}
+    </section>
   );
 }
 
 export function LoadingBlock({ h = "h-56" }: { h?: string }) { return <Skeleton className={cn("w-full", h)} />; }
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
+    <div role="alert" className="flex items-start gap-3 border-l-2 border-destructive bg-destructive/5 p-4 text-sm">
       <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive" />
       <div className="flex-1"><p className="font-medium">Could not load this data</p><p className="text-muted-foreground">{message}</p></div>
       {onRetry && <Button size="sm" variant="outline" onClick={onRetry}>Retry</Button>}
@@ -78,10 +78,10 @@ export function Async<T>({ state, children, h }: { state: { data: T | null; erro
 
 export function BandPill({ band }: { band: string | null | undefined }) {
   if (!band) return <span className="text-muted-foreground">-</span>;
-  return <span className="inline-flex items-center gap-1.5 text-xs font-medium capitalize"><span className="size-2 rounded-full" style={{ background: `var(--${band})` }} />{band}</span>;
+  return <span className="inline-flex items-center gap-1.5 text-xs font-medium capitalize"><span className="size-2" style={{ background: `var(--${band})` }} />{band}</span>;
 }
 export function LabelPill({ status }: { status: string }) {
-  const m: Record<string, [string, string]> = { confirmed_fraud_label: ["Fraud label", "text-critical border-critical/40 bg-critical/10"], labeled_non_fraud: ["Non-fraud label", "text-muted-foreground border-border"], unlabeled: ["Unlabeled", "text-chart-3 border-chart-3/40 bg-chart-3/10"] };
+  const m: Record<string, [string, string]> = { confirmed_fraud_label: ["Fraud label", "font-semibold text-critical"], labeled_non_fraud: ["Non-fraud label", "text-muted-foreground"], unlabeled: ["Unlabeled", "italic text-chart-3"] };
   const [t, c] = m[status] ?? [status, ""];
-  return <span className={cn("inline-block whitespace-nowrap rounded border px-1.5 py-0.5 text-[11px]", c)}>{t}</span>;
+  return <span className={cn("whitespace-nowrap text-[11.5px]", c)}>{t}</span>;
 }

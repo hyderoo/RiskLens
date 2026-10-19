@@ -51,7 +51,7 @@ export default function Overview() {
                     <YAxis yAxisId="l" {...AXIS} tickFormatter={compact} width={44} />
                     <YAxis yAxisId="r" orientation="right" {...AXIS} tickFormatter={(v: number) => v.toFixed(2) + "%"} width={48} />
                     <Tooltip content={<ChartTip fmt={(n, v) => n.includes("rate") ? v.toFixed(3) + "%" : n0(v)} />} />
-                    <Bar isAnimationActive={false} yAxisId="l" dataKey="n" name="Transactions" fill="var(--chart-1)" fillOpacity={0.45} radius={[2, 2, 0, 0]} />
+                    <Bar isAnimationActive={false} yAxisId="l" dataKey="n" name="Transactions" fill="var(--chart-1)" fillOpacity={0.45} />
                     <Line isAnimationActive={false} yAxisId="r" dataKey="rate" name="Fraud rate (labeled)" stroke="var(--chart-5)" strokeWidth={2} dot={false} connectNulls />
                   </ComposedChart>
                 </ResponsiveContainer></div>
@@ -61,7 +61,7 @@ export default function Overview() {
                   <BarChart data={bands} layout="vertical" margin={{ left: 8, right: 12 }}>
                     <XAxis type="number" {...AXIS} tickFormatter={compact} /><YAxis type="category" dataKey="band" {...AXIS} width={60} />
                     <Tooltip content={<ChartTip />} cursor={{ fill: "var(--accent)" }} />
-                    <Bar isAnimationActive={false} dataKey="n" name="Transactions" radius={[0, 3, 3, 0]}>{bands.map((b) => <Cell key={b.band} fill={BAND_COLOR[b.band]} />)}</Bar>
+                    <Bar isAnimationActive={false} dataKey="n" name="Transactions">{bands.map((b) => <Cell key={b.band} fill={BAND_COLOR[b.band]} />)}</Bar>
                   </BarChart>
                 </ResponsiveContainer></div>
                 <table className="tnum w-full text-xs"><thead className="text-muted-foreground"><tr><th className="text-left font-normal">Band</th><th className="text-right font-normal">Txns</th><th className="text-right font-normal">Fraud rate</th></tr></thead>
