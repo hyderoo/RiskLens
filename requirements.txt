@@ -1,0 +1,12 @@
+duckdb==1.5.5
+pandas
+pyarrow
+numpy
+scikit-learn
+lightgbm
+joblib
+fastapi
+uvicorn[standard]
+pydantic
+httpx
+pytest

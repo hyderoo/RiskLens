@@ -1,0 +1,21 @@
+# data, artifacts, secrets
+/data
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.csv
+!backend/tests/fixtures/*.csv
+backend/artifacts/*.joblib
+backend/artifacts/*.txt
+!backend/artifacts/metrics.json
+*.sqlite
+.env
+.env.*
+!.env.example
+__pycache__/
+.venv/
+.pytest_cache/
+node_modules/
+.next/
+frontend/.vercel
+*.log
