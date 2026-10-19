@@ -13,7 +13,7 @@ export default function Reports() {
   return (
     <>
       <PageHeader title="Reports" subtitle="A generated summary built from the live metrics. Use Print to save it as a PDF from your browser; CSV exports run on the backend.">
-        <div className="no-print flex gap-2">
+        <div className="no-print flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="mr-1.5 size-3.5" />Print / save as PDF</Button>
           <a className={buttonVariants({ variant: "outline", size: "sm" })} href={csv("/api/transactions/export?label=fraud&limit=50000")} download><Download className="mr-1.5 size-3.5" />Confirmed fraud CSV</a>
           <a className={buttonVariants({ variant: "outline", size: "sm" })} href={csv("/api/transactions/export?score_min=0.0319&limit=50000")} download><Download className="mr-1.5 size-3.5" />Flagged CSV</a>
