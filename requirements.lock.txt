@@ -5,7 +5,7 @@ joblib==1.6.0
 lightgbm==4.7.0
 numpy==2.2.6
 pandas==2.3.3
-pyarrow==25.0.1
+pyarrow==26.0.0
 pydantic==2.14.1
 pytest==9.1.1
 scikit-learn==1.7.2
