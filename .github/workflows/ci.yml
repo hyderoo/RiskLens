@@ -61,7 +61,7 @@ jobs:
 
       - name: Restore scored warehouse
         id: warehouse-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: data/work
           key: risklens-warehouse-${{ hashFiles('backend/pipeline/**', 'backend/models/**', 'backend/app/**') }}
