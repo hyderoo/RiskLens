@@ -69,7 +69,9 @@ jobs:
 
       - name: Download raw dataset
         if: steps.warehouse-cache.outputs.cache-hit != 'true'
-        run: python -m gdown "https://drive.google.com/uc?id=1ft7ZQdDvWowxqnh_bNvLPfjjf2IEh9ca" -O data/archive.zip
+        run: |
+          mkdir -p data
+          python -m gdown "https://drive.google.com/uc?id=1ft7ZQdDvWowxqnh_bNvLPfjjf2IEh9ca" -O data/archive.zip
       - name: Extract raw dataset
         if: steps.warehouse-cache.outputs.cache-hit != 'true'
         run: cd data && unzip -o -q archive.zip && rm archive.zip
